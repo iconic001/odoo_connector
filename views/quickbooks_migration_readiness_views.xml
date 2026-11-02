@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Readiness Assessment Form View -->
+    <record id="view_quickbooks_migration_readiness_form" model="ir.ui.view">
+        <field name="name">quickbooks.migration.readiness.form</field>
+        <field name="model">quickbooks.migration.readiness</field>
+        <field name="arch" type="xml">
+            <form string="QuickBooks Migration Readiness Assessment">
+                <header>
+                    <button name="action_evaluate"
+                            string="Run Readiness Audit"
+                            type="object"
+                            class="oe_highlight btn-primary"
+                            icon="fa-refresh"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <!-- Target Environment Context -->
+                    <group string="Target QuickBooks Connection &amp; Preferences">
+                        <group>
+                            <field name="qbo_company_name"/>
+                            <field name="qbo_country"/>
+                        </group>
+                        <group>
+                            <field name="qbo_home_currency"/>
+                            <field name="qbo_multicurrency" widget="boolean_toggle"/>
+                            <field name="scope" widget="radio"/>
+                        </group>
+                    </group>
+
+                    <!-- KPI Summary Stat Cards -->
+                    <div class="row mt16 mb16">
+                        <div class="col-md-4">
+                            <div class="card text-white bg-success mb-3 p-3 text-center">
+                                <div class="card-header font-weight-bold" style="font-size: 1.1rem;">READY FOR MIGRATION</div>
+                                <div class="card-body">
+                                    <h2 class="card-title text-white"><field name="ready_count"/> Invoices</h2>
+                                    <p class="card-text text-white"><field name="ready_amount" widget="monetary"/></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-white bg-warning mb-3 p-3 text-center">
+                                <div class="card-header font-weight-bold" style="font-size: 1.1rem; color: #333 !important;">REVIEW REQUIRED</div>
+                                <div class="card-body">
+                                    <h2 class="card-title" style="color: #333 !important;"><field name="review_count"/> Invoices</h2>
+                                    <p class="card-text" style="color: #333 !important;"><field name="review_amount" widget="monetary"/></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-white bg-danger mb-3 p-3 text-center">
+                                <div class="card-header font-weight-bold" style="font-size: 1.1rem;">BLOCKED</div>
+                                <div class="card-body">
+                                    <h2 class="card-title text-white"><field name="blocked_count"/> Invoices</h2>
+                                    <p class="card-text text-white"><field name="blocked_amount" widget="monetary"/></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Blocker Breakdown Analysis -->
+                    <group string="Risk &amp; Blocker Breakdown Analysis">
+                        <group>
+                            <field name="currency_incompatible_count"/>
+                            <field name="customer_unmapped_count"/>
+                            <field name="product_unmapped_count"/>
+                        </group>
+                        <group>
+                            <field name="tax_gap_count"/>
+                            <field name="duplicate_risk_count"/>
+                            <field name="paid_invoices_count"/>
+                        </group>
+                    </group>
+
+                    <!-- Lines Notebook -->
+                    <notebook>
+                        <page string="Evaluated Invoices">
+                            <field name="line_ids" readonly="1">
+                                <tree decoration-success="status == 'ready'"
+                                      decoration-warning="status == 'review'"
+                                      decoration-danger="status == 'blocked'">
+                                    <field name="invoice_name"/>
+                                    <field name="invoice_date"/>
+                                    <field name="partner_id"/>
+                                    <field name="amount_untaxed"/>
+                                    <field name="amount_tax"/>
+                                    <field name="amount_total"/>
+                                    <field name="currency_id"/>
+                                    <field name="move_state" widget="badge"/>
+                                    <field name="status" widget="badge"
+                                           decoration-success="status == 'ready'"
+                                           decoration-warning="status == 'review'"
+                                           decoration-danger="status == 'blocked'"/>
+                                    <field name="currency_status" widget="badge"
+                                           decoration-success="currency_status == 'compatible'"
+                                           decoration-danger="currency_status == 'incompatible'"/>
+                                    <field name="customer_status" widget="badge"
+                                           decoration-success="customer_status == 'mapped'"
+                                           decoration-warning="customer_status == 'candidate_found'"
+                                           decoration-danger="customer_status == 'unmapped'"/>
+                                    <field name="product_status" widget="badge"
+                                           decoration-success="product_status == 'all_mapped'"
+                                           decoration-danger="product_status == 'unmapped_lines'"/>
+                                    <field name="tax_status" widget="badge"
+                                           decoration-success="tax_status == 'mapped'"
+                                           decoration-danger="tax_status == 'unmapped_taxes'"/>
+                                    <field name="duplicate_status" widget="badge"
+                                           decoration-muted="duplicate_status == 'none'"
+                                           decoration-warning="duplicate_status in ('has_qbo_id', 'queued')"/>
+                                    <field name="payment_consideration" widget="badge"
+                                           decoration-muted="payment_consideration == 'none'"
+                                           decoration-info="payment_consideration == 'paid'"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Line Detail Form View -->
+    <record id="view_quickbooks_migration_readiness_line_form" model="ir.ui.view">
+        <field name="name">quickbooks.migration.readiness.line.form</field>
+        <field name="model">quickbooks.migration.readiness.line</field>
+        <field name="arch" type="xml">
+            <form string="Invoice Migration Readiness Detail">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>
+                            <field name="invoice_name" readonly="1"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Invoice Details">
+                            <field name="move_id" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="invoice_date" readonly="1"/>
+                            <field name="move_state" readonly="1"/>
+                            <field name="payment_state" readonly="1"/>
+                        </group>
+                        <group string="Financials">
+                            <field name="amount_untaxed" readonly="1"/>
+                            <field name="amount_tax" readonly="1"/>
+                            <field name="amount_total" readonly="1"/>
+                            <field name="amount_residual" readonly="1"/>
+                            <field name="currency_id" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Readiness Evaluation">
+                        <group>
+                            <field name="status" widget="badge" readonly="1"
+                                   decoration-success="status == 'ready'"
+                                   decoration-warning="status == 'review'"
+                                   decoration-danger="status == 'blocked'"/>
+                            <field name="currency_status" widget="badge" readonly="1"
+                                   decoration-success="currency_status == 'compatible'"
+                                   decoration-danger="currency_status == 'incompatible'"/>
+                            <field name="customer_status" widget="badge" readonly="1"
+                                   decoration-success="customer_status == 'mapped'"
+                                   decoration-warning="customer_status == 'candidate_found'"
+                                   decoration-danger="customer_status == 'unmapped'"/>
+                            <field name="product_status" widget="badge" readonly="1"
+                                   decoration-success="product_status == 'all_mapped'"
+                                   decoration-danger="product_status == 'unmapped_lines'"/>
+                        </group>
+                        <group>
+                            <field name="tax_status" widget="badge" readonly="1"
+                                   decoration-success="tax_status == 'mapped'"
+                                   decoration-danger="tax_status == 'unmapped_taxes'"/>
+                            <field name="account_status" widget="badge" readonly="1"
+                                   decoration-success="account_status == 'ready'"
+                                   decoration-warning="account_status == 'needs_review'"/>
+                            <field name="duplicate_status" widget="badge" readonly="1"
+                                   decoration-muted="duplicate_status == 'none'"
+                                   decoration-warning="duplicate_status in ('has_qbo_id', 'queued')"/>
+                            <field name="payment_consideration" widget="badge" readonly="1"
+                                   decoration-muted="payment_consideration == 'none'"
+                                   decoration-info="payment_consideration == 'paid'"/>
+                        </group>
+                    </group>
+
+                    <separator string="Audit Findings &amp; Migration Blockers"/>
+                    <div class="p-3 bg-light border rounded mb-3" style="width: 100%; white-space: pre-wrap; font-size: 13px; line-height: 1.6;">
+                        <field name="issues_summary" readonly="1" nolabel="1" class="w-100"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Readiness Line Search View -->
+    <record id="view_quickbooks_migration_readiness_line_search" model="ir.ui.view">
+        <field name="name">quickbooks.migration.readiness.line.search</field>
+        <field name="model">quickbooks.migration.readiness.line</field>
+        <field name="arch" type="xml">
+            <search string="Search Readiness Lines">
+                <field name="invoice_name"/>
+                <field name="partner_id"/>
+                <filter name="filter_ready" string="Ready" domain="[('status', '=', 'ready')]"/>
+                <filter name="filter_review" string="Review Required" domain="[('status', '=', 'review')]"/>
+                <filter name="filter_blocked" string="Blocked" domain="[('status', '=', 'blocked')]"/>
+                <separator/>
+                <filter name="filter_paid" string="Historical Paid Invoices" domain="[('payment_consideration', '=', 'paid')]"/>
+                <filter name="filter_curr_incomp" string="Currency Incompatible" domain="[('currency_status', '=', 'incompatible')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_by_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_by_currency" string="Currency" context="{'group_by': 'currency_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action & Menu -->
+    <record id="action_quickbooks_migration_readiness" model="ir.actions.act_window">
+        <field name="name">Migration Readiness</field>
+        <field name="res_model">quickbooks.migration.readiness</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_quickbooks_migration_readiness"
+              name="Migration Readiness"
+              parent="menu_quickbooks_root"
+              action="action_quickbooks_migration_readiness"
+              sequence="15"
+              groups="account.group_account_invoice,account.group_account_manager"/>
+</odoo>

@@ -1,0 +1,21 @@
+{
+    'name': 'QuickBooks Online Connector',
+    'version': '17.0.2.0.0',
+    'category': 'Accounting',
+    'summary': 'Export posted Odoo 17 customer invoices, credit notes, and payments to QuickBooks Online',
+    'license': 'LGPL-3',
+    'depends': ['account', 'product', 'contacts'],
+    'external_dependencies': {'python': ['requests']},
+    'data': [
+        'security/ir.model.access.csv',
+        'data/ir_cron.xml',
+        'views/quickbooks_views.xml',
+        'views/quickbooks_tax_mapping_views.xml',
+        'views/quickbooks_mapping_wizard_views.xml',
+        'views/quickbooks_migration_readiness_views.xml',
+        'views/quickbooks_invoice_preview_views.xml',
+        'views/res_config_settings_views.xml',
+    ],
+    'installable': True,
+    'application': True,
+}

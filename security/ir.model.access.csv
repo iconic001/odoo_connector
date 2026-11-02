@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_quickbooks_sync_log_manager,quickbooks.sync.log.manager,model_quickbooks_sync_log,account.group_account_manager,1,1,1,0
+access_quickbooks_invoice_preview_manager,quickbooks.invoice.preview.manager,model_quickbooks_invoice_preview,account.group_account_manager,1,1,1,0
+access_quickbooks_migration_readiness_manager,quickbooks.migration.readiness.manager,model_quickbooks_migration_readiness,account.group_account_manager,1,1,1,1
+access_quickbooks_migration_readiness_line_manager,quickbooks.migration.readiness.line.manager,model_quickbooks_migration_readiness_line,account.group_account_manager,1,1,1,1
+access_quickbooks_tax_mapping_manager,quickbooks.tax.mapping.manager,model_quickbooks_tax_mapping,account.group_account_manager,1,1,1,1
+access_quickbooks_mapping_wizard_manager,quickbooks.mapping.wizard.manager,model_quickbooks_mapping_wizard,account.group_account_manager,1,1,1,1
+access_quickbooks_mapping_wizard_line_manager,quickbooks.mapping.wizard.line.manager,model_quickbooks_mapping_wizard_line,account.group_account_manager,1,1,1,1

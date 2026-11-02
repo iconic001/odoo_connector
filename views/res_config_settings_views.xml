@@ -1,0 +1,40 @@
+<odoo>
+ <record id="res_config_settings_view_form_quickbooks" model="ir.ui.view">
+  <field name="name">res.config.settings.quickbooks</field><field name="model">res.config.settings</field>
+  <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+  <field name="arch" type="xml"><xpath expr="//form" position="inside">
+   <div class="app_settings_block" data-string="QuickBooks Online" string="QuickBooks Online" groups="base.group_system">
+    <h2>QuickBooks Online Connection</h2><div class="row mt16 o_settings_container"><div class="col-12 col-lg-6 o_setting_box"><div class="o_setting_left_pane"/><div class="o_setting_right_pane">
+     <label for="qb_environment"/><field name="qb_environment"/>
+     <label for="qb_client_id"/><field name="qb_client_id"/>
+     <label for="qb_client_secret"/><field name="qb_client_secret" password="True"/>
+     <label for="qb_realm_id"/><field name="qb_realm_id" readonly="1"/>
+     <label for="qb_default_income_account_id"/><field name="qb_default_income_account_id"/>
+     <label for="qb_auto_sync_payments"/><field name="qb_auto_sync_payments"/>
+     <label for="qb_redirect_uri"/><field name="qb_redirect_uri" readonly="1"/>
+     <div class="mt16">
+       <a href="/quickbooks/oauth/start" class="btn btn-primary" role="button">Connect to QuickBooks</a>
+     </div>
+    </div></div>
+    <div class="col-12 col-lg-6 o_setting_box"><div class="o_setting_left_pane"/><div class="o_setting_right_pane">
+     <span class="o_form_label">QuickBooks Setup &amp; Tools</span>
+     <div class="text-muted">Configure tax mappings, match customers/products, or run readiness audits.</div>
+     <div class="mt16 d-flex flex-column gap-2">
+       <div>
+         <button name="%(quickbooks_connector.action_quickbooks_tax_mapping)d" type="action" string="Configure Tax Mappings" class="btn btn-secondary" icon="fa-percent"/>
+       </div>
+       <div>
+         <button name="%(quickbooks_connector.action_quickbooks_mapping_wizard)d" type="action" string="Master Data Mapping Wizard" class="btn btn-secondary" icon="fa-exchange"/>
+       </div>
+       <div>
+         <button name="%(quickbooks_connector.action_quickbooks_migration_readiness)d" type="action" string="Run Migration Readiness Audit" class="btn btn-secondary" icon="fa-check-circle"/>
+       </div>
+       <div>
+         <button name="%(quickbooks_connector.action_quickbooks_sync_logs)d" type="action" string="View QuickBooks Sync Queue" class="btn btn-link" icon="fa-list"/>
+       </div>
+     </div>
+    </div></div></div>
+   </div>
+  </xpath></field>
+ </record>
+</odoo>

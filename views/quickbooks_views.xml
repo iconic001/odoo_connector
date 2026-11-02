@@ -1,0 +1,33 @@
+<odoo>
+ <record id="view_quickbooks_sync_log_tree" model="ir.ui.view"><field name="name">quickbooks.sync.log.tree</field><field name="model">quickbooks.sync.log</field><field name="arch" type="xml">
+  <tree decoration-success="status == 'done'" decoration-danger="status == 'error'">
+   <header>
+    <button name="action_process_queue" type="object" string="Process Queue Now" class="btn-primary" icon="fa-play"/>
+   </header>
+   <field name="create_date"/>
+   <field name="name"/>
+   <field name="model_name"/>
+   <field name="res_id"/>
+   <field name="status"/>
+   <field name="qb_id"/>
+   <field name="attempt_count"/>
+  </tree>
+ </field></record>
+ <record id="view_quickbooks_sync_log_form" model="ir.ui.view"><field name="name">quickbooks.sync.log.form</field><field name="model">quickbooks.sync.log</field><field name="arch" type="xml"><form><header><button name="action_process_queue" type="object" string="Process Queue Now" class="btn-primary" icon="fa-play"/><button name="action_retry" type="object" string="Retry" class="btn-secondary" invisible="status != &quot;error&quot;"/><field name="status" widget="statusbar" statusbar_visible="queued,done,error"/></header><sheet><group><field name="name"/><field name="model_name"/><field name="res_id"/><field name="qb_id"/><field name="attempt_count"/></group><field name="message"/></sheet></form></field></record>
+ <record id="action_quickbooks_sync_logs" model="ir.actions.act_window"><field name="name">QuickBooks Sync Queue</field><field name="res_model">quickbooks.sync.log</field><field name="view_mode">tree,form</field></record>
+ <menuitem id="menu_quickbooks_root" name="QuickBooks" parent="account.menu_finance" sequence="95" groups="account.group_account_invoice,account.group_account_manager"/>
+ <menuitem id="menu_quickbooks_sync_logs" name="Sync Queue" parent="menu_quickbooks_root" action="action_quickbooks_sync_logs" sequence="10" groups="account.group_account_invoice,account.group_account_manager"/>
+ <record id="view_move_form_quickbooks" model="ir.ui.view"><field name="name">account.move.form.quickbooks</field><field name="model">account.move</field><field name="inherit_id" ref="account.view_move_form"/><field name="arch" type="xml">
+  <xpath expr="//header" position="inside"><button name="action_quickbooks_queue_export" type="object" string="Export to QuickBooks" class="btn-secondary" invisible="move_type not in (&quot;out_invoice&quot;, &quot;out_refund&quot;) or state != &quot;posted&quot;"/></xpath>
+  <xpath expr="//sheet" position="inside"><group string="QuickBooks"><field name="quickbooks_id" readonly="1"/><field name="quickbooks_sync_status" readonly="1"/></group></xpath>
+ </field></record>
+ <record id="view_account_payment_form_quickbooks" model="ir.ui.view">
+  <field name="name">account.payment.form.quickbooks</field>
+  <field name="model">account.payment</field>
+  <field name="inherit_id" ref="account.view_account_payment_form"/>
+  <field name="arch" type="xml">
+   <xpath expr="//header" position="inside"><button name="action_quickbooks_queue_export" type="object" string="Export to QuickBooks" class="btn-secondary" invisible="payment_type != &quot;inbound&quot; or state != &quot;posted&quot;"/></xpath>
+   <xpath expr="//sheet" position="inside"><group string="QuickBooks"><field name="quickbooks_id" readonly="1"/><field name="quickbooks_sync_status" readonly="1"/></group></xpath>
+  </field>
+ </record>
+</odoo>

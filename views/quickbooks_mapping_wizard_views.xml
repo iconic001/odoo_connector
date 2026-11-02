@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_quickbooks_mapping_wizard_form" model="ir.ui.view">
+        <field name="name">quickbooks.mapping.wizard.form</field>
+        <field name="model">quickbooks.mapping.wizard</field>
+        <field name="arch" type="xml">
+            <form string="QuickBooks Master Data Mapping &amp; Onboarding">
+                <header>
+                    <button name="action_load_and_match"
+                            string="1. Scan &amp; Match Candidates"
+                            type="object"
+                            class="oe_highlight btn-primary"
+                            icon="fa-search"/>
+                    <button name="action_select_all_matched"
+                            string="Select All Matched"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-check-square-o"/>
+                    <button name="action_select_all_unmatched"
+                            string="Select All Unmatched"
+                            type="object"
+                            class="btn-warning"
+                            icon="fa-plus-square-o"/>
+                    <button name="action_deselect_all"
+                            string="Deselect All"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-square-o"/>
+                    <button name="action_apply_mappings"
+                            string="2. Apply Approved Mappings"
+                            type="object"
+                            class="btn-success"
+                            icon="fa-save"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h2>Master Data Mapping &amp; Assisted Onboarding</h2>
+                    </div>
+                    <div class="alert alert-info py-2 px-3 mb-3" role="alert" style="width: 100%;">
+                        <strong><i class="fa fa-info-circle me-1" title="Info" role="img" aria-label="Info"/> How it works:</strong>
+                        &#160;&#160;
+                        <span><i class="fa fa-search me-1" title="Scan" role="img" aria-label="Scan"/>1. Choose type &#38; click <strong>Scan</strong></span>
+                        &#160;&#8594;&#160;
+                        <span><i class="fa fa-check-square-o me-1" title="Review" role="img" aria-label="Review"/>2. Review matches / set action</span>
+                        &#160;&#8594;&#160;
+                        <span><i class="fa fa-save me-1" title="Apply" role="img" aria-label="Apply"/>3. Toggle <strong>Apply</strong> &#38; click <strong>Apply Approved Mappings</strong></span>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="mapping_type" widget="radio"/>
+                            <field name="product_scope" widget="radio" invisible="mapping_type != 'product'"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-success py-1 px-3 mb-2" role="status"
+                         invisible="result_message == False or result_message == ''">
+                        <i class="fa fa-check-circle me-1" title="Done" role="img" aria-label="Done"/>
+                        <field name="result_message" readonly="1" nolabel="1" class="d-inline"/>
+                    </div>
+                    <div class="row mt16 mb16">
+                        <div class="col-md-3">
+                            <div class="card bg-light p-2 text-center">
+                                <div class="text-muted font-weight-bold">Total Scanned
+                                </div>
+                                <h3>
+                                    <field name="total_odoo_records"/>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-success p-2 text-center">
+                                <div class="font-weight-bold">Already Mapped
+                                </div>
+                                <h3>
+                                    <field name="mapped_count"/>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-info p-2 text-center">
+                                <div class="font-weight-bold">Matches Found in QBO
+                                </div>
+                                <h3>
+                                    <field name="matched_count"/>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-warning p-2 text-center">
+                                <div class="font-weight-bold" style="color: #333 !important;">Unmatched / Needs Creation
+                                </div>
+                                <h3 style="color: #333 !important;">
+                                    <field name="unmatched_count"/>
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                    <notebook>
+                        <page string="Candidates &amp; Review Lines">
+                            <field name="line_ids">
+                                <tree editable="bottom"
+                                      decoration-success="status == 'success'"
+                                      decoration-warning="match_type in ('exact_name', 'email', 'sku') and not status"
+                                      decoration-muted="match_type == 'already_mapped'"
+                                      decoration-danger="status == 'error'">
+                                    <field name="selected" widget="boolean_toggle"/>
+                                    <field name="name" readonly="1"/>
+                                    <field name="ref" readonly="1" optional="show"/>
+                                    <field name="email" readonly="1" optional="show"/>
+                                    <field name="current_qb_id" readonly="1" optional="hide"/>
+                                    <field name="match_type" widget="badge" readonly="1"
+                                           decoration-success="match_type in ('already_mapped', 'exact_name')"
+                                           decoration-info="match_type in ('email', 'sku')"
+                                           decoration-warning="match_type == 'none'"/>
+                                    <field name="candidate_qb_id"/>
+                                    <field name="candidate_qb_name" readonly="1"/>
+                                    <field name="action_to_take"/>
+                                    <field name="status" widget="badge" readonly="1"
+                                           decoration-success="status == 'success'"
+                                           decoration-danger="status == 'error'"/>
+                                    <field name="message" readonly="1"/>
+                                </tree></field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form></field>
+    </record>
+    <record id="action_quickbooks_mapping_wizard" model="ir.actions.act_window">
+        <field name="name">Master Data Mapping Wizard</field>
+        <field name="res_model">quickbooks.mapping.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+    <menuitem id="menu_quickbooks_mapping_wizard"
+              name="Master Data Mapping"
+              parent="menu_quickbooks_root"
+              action="action_quickbooks_mapping_wizard"
+              sequence="20"
+              groups="account.group_account_invoice,account.group_account_manager"/>
+</odoo>
+

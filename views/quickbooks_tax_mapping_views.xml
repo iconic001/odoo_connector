@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_quickbooks_tax_mapping_tree" model="ir.ui.view">
+        <field name="name">quickbooks.tax.mapping.tree</field>
+        <field name="model">quickbooks.tax.mapping</field>
+        <field name="arch" type="xml">
+            <tree string="QuickBooks Tax Mappings" editable="bottom">
+                <field name="company_id" optional="show"/>
+                <field name="tax_id"/>
+                <field name="tax_amount"/>
+                <field name="tax_type"/>
+                <field name="qbo_tax_code_id"/>
+                <field name="qbo_tax_code_name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_quickbooks_tax_mapping_form" model="ir.ui.view">
+        <field name="name">quickbooks.tax.mapping.form</field>
+        <field name="model">quickbooks.tax.mapping</field>
+        <field name="arch" type="xml">
+            <form string="QuickBooks Tax Mapping">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Odoo Tax Configuration">
+                            <field name="company_id"/>
+                            <field name="tax_id" options="{'no_create': True}"/>
+                            <field name="tax_amount"/>
+                        </group>
+                        <group string="QuickBooks Online Tax Code">
+                            <field name="qbo_tax_code_id" placeholder="e.g. TAX, NON, 2, 3"/>
+                            <field name="qbo_tax_code_name" placeholder="e.g. California, VAT 16%"/>
+                            <field name="tax_type"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <group string="Accounting Notes &amp; Audit Trail">
+                        <field name="notes" placeholder="Explain the rationale, tax agency, or QBO setup for this mapping..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_quickbooks_tax_mapping_search" model="ir.ui.view">
+        <field name="name">quickbooks.tax.mapping.search</field>
+        <field name="model">quickbooks.tax.mapping</field>
+        <field name="arch" type="xml">
+            <search string="Search Tax Mappings">
+                <field name="name"/>
+                <field name="tax_id"/>
+                <field name="qbo_tax_code_id"/>
+                <field name="qbo_tax_code_name"/>
+                <filter name="filter_taxable" string="Taxable" domain="[('tax_type', '=', 'taxable')]"/>
+                <filter name="filter_zero_rate" string="Zero-Rated" domain="[('tax_type', '=', 'zero_rate')]"/>
+                <filter name="filter_exempt" string="Exempt" domain="[('tax_type', '=', 'exempt')]"/>
+                <separator/>
+                <filter name="filter_active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_tax_type" string="Tax Type" context="{'group_by': 'tax_type'}"/>
+                    <filter name="group_by_company" string="Company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action & Menu Item -->
+    <record id="action_quickbooks_tax_mapping" model="ir.actions.act_window">
+        <field name="name">Tax Mappings</field>
+        <field name="res_model">quickbooks.tax.mapping</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configure explicit mappings between Odoo sales taxes and QuickBooks Online TaxCodes.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_quickbooks_tax_mapping"
+              name="Tax Mappings"
+              parent="menu_quickbooks_root"
+              action="action_quickbooks_tax_mapping"
+              sequence="25"
+              groups="account.group_account_invoice,account.group_account_manager"/>
+
+    <!-- Also accessible under Invoicing > Configuration for Community users -->
+    <menuitem id="menu_quickbooks_tax_mapping_config"
+              name="QuickBooks Tax Mappings"
+              parent="account.menu_finance_configuration"
+              action="action_quickbooks_tax_mapping"
+              sequence="35"
+              groups="account.group_account_invoice,account.group_account_manager"/>
+</odoo>
