@@ -21,7 +21,8 @@ class AccountMove(models.Model):
 
     def action_quickbooks_queue_export(self):
         client = self.env['quickbooks.client']
-        for m in self:
+        if len(self) == 1:
+            m = self
             if m.move_type not in ('out_invoice', 'out_refund') or m.state != 'posted':
                 raise UserError(_('Only posted customer invoices and credit notes can be exported.'))
             if m.quickbooks_id:
@@ -45,10 +46,59 @@ class AccountMove(models.Model):
                 'res_id': m.id,
             })
             m.quickbooks_sync_status = 'queued'
+            queued_count = 1
+        else:
+            eligible = self.filtered(
+                lambda m: m.move_type in ('out_invoice', 'out_refund')
+                and m.state == 'posted'
+                and not m.quickbooks_id
+            )
+            if not eligible:
+                raise UserError(_('No eligible posted customer invoices or credit notes selected for export.'))
+
+            queued_count = 0
+            for m in eligible:
+                existing = self.env['quickbooks.sync.log'].search([
+                    ('model_name', '=', 'account.move'),
+                    ('res_id', '=', m.id),
+                    ('status', 'in', ['queued', 'done']),
+                ], limit=1)
+                if existing:
+                    continue
+
+                try:
+                    client.check_currency_support(m.currency_id.name)
+                except Exception as ce:
+                    _logger.warning("Skipping move %s during batch export queue: %s", m.name, ce)
+                    continue
+
+                label = 'Credit Note' if m.move_type == 'out_refund' else 'Invoice'
+                self.env['quickbooks.sync.log'].create({
+                    'name': '%s %s' % (label, m.name),
+                    'model_name': 'account.move',
+                    'res_id': m.id,
+                })
+                m.quickbooks_sync_status = 'queued'
+                queued_count += 1
+
+            if queued_count == 0:
+                raise UserError(_('None of the selected records could be queued (they may already be queued, synced, or have incompatible currencies).'))
 
         # Immediately process queue so interactive clicks export on the spot
         if not odoo.tools.config['test_enable']:
-            self.env['quickbooks.client'].cron_process_queue(limit=len(self))
+            self.env['quickbooks.client'].cron_process_queue(limit=queued_count)
+
+        if len(self) > 1:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('QuickBooks Export'),
+                    'message': _('%(count)s invoice(s) queued for QuickBooks export.') % {'count': queued_count},
+                    'type': 'success',
+                    'sticky': False,
+                }
+            }
         return True
 
     def _quickbooks_export_invoice(self):

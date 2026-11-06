@@ -21,7 +21,8 @@ class AccountPayment(models.Model):
 
     def action_quickbooks_queue_export(self):
         client = self.env['quickbooks.client']
-        for pay in self:
+        if len(self) == 1:
+            pay = self
             if pay.payment_type != 'inbound' or pay.state != 'posted':
                 raise UserError(_('Only posted inbound customer payments can be exported.'))
             if pay.quickbooks_id:
@@ -43,10 +44,58 @@ class AccountPayment(models.Model):
                 'res_id': pay.id,
             })
             pay.quickbooks_sync_status = 'queued'
+            queued_count = 1
+        else:
+            eligible = self.filtered(
+                lambda p: p.payment_type == 'inbound'
+                and p.state == 'posted'
+                and not p.quickbooks_id
+            )
+            if not eligible:
+                raise UserError(_('No eligible posted customer payments selected for export.'))
+
+            queued_count = 0
+            for pay in eligible:
+                existing = self.env['quickbooks.sync.log'].search([
+                    ('model_name', '=', 'account.payment'),
+                    ('res_id', '=', pay.id),
+                    ('status', 'in', ['queued', 'done']),
+                ], limit=1)
+                if existing:
+                    continue
+
+                try:
+                    client.check_currency_support(pay.currency_id.name)
+                except Exception as ce:
+                    _logger.warning("Skipping payment %s during batch export queue: %s", pay.name, ce)
+                    continue
+
+                self.env['quickbooks.sync.log'].create({
+                    'name': 'Payment %s' % pay.name,
+                    'model_name': 'account.payment',
+                    'res_id': pay.id,
+                })
+                pay.quickbooks_sync_status = 'queued'
+                queued_count += 1
+
+            if queued_count == 0:
+                raise UserError(_('None of the selected payments could be queued (they may already be queued, synced, or have incompatible currencies).'))
 
         # Immediately process queue so interactive clicks export on the spot
         if not odoo.tools.config['test_enable']:
-            self.env['quickbooks.client'].cron_process_queue(limit=len(self))
+            self.env['quickbooks.client'].cron_process_queue(limit=queued_count)
+
+        if len(self) > 1:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('QuickBooks Export'),
+                    'message': _('%(count)s payment(s) queued for QuickBooks export.') % {'count': queued_count},
+                    'type': 'success',
+                    'sticky': False,
+                }
+            }
         return True
 
     def _quickbooks_export_payment(self):
